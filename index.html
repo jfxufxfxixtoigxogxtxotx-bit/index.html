@@ -117,11 +117,11 @@
     function goPay() {
       let val = document.getElementById('targetInput').value.trim().replace(/[^a-zA-Z0-9_]/g, '').slice(0, 32);
       if (!val) { alert("Iltimos, ID yoki username kiriting!"); return; }
-      if (@tezpaypin_bot) { alert("Do'konni bot ichidan oching!"); return; }
-      const link = `https://t.me/${@tezpaypin_bot }?start=buy_${selected.code}_${val}`;
+      if (!tg || !tg.initData) { alert("Do'konni bot ichidan oching!"); return; }
+      const link = `https://t.me/tezpaypin_bot?start=buy_... 
       if (tg) { tg.openTelegramLink(link); tg.close(); } else { window.location.href = link; }
     }
     showCat('stars');
-  if (!tg || !tg.initData) { alert("Do'konni bot ichidan oching!"); return; } 
-const link = `https://t.me/tezpaypin_bot?start=buy_${selected...}`;
+  </script>
+</body>
   </html>
