@@ -1,1 +1,127 @@
-Tez Shop HTML kodini
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Tez Shop</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { background: #0b0f19; color: #fff; padding: 14px 14px 30px; }
+    .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .logo { font-size: 20px; font-weight: 800; color: #38bdf8; }
+    .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 16px; }
+    .tab { padding: 10px 4px; border-radius: 12px; border: 1px solid #1e293b; background: #111827; color: #94a3b8; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .tab.active { background: #2563eb; color: #fff; border-color: #3b82f6; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .card { background: #131c31; border: 1px solid #1e293b; border-radius: 16px; padding: 14px; text-align: center; cursor: pointer; }
+    .card:active { transform: scale(0.97); border-color: #38bdf8; }
+    .icon { font-size: 28px; margin-bottom: 6px; }
+    .title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .price { font-size: 13px; color: #34d399; font-weight: 700; }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); align-items: flex-end; justify-content: center; }
+    .modal.open { display: flex; }
+    .sheet { width: 100%; background: #131c31; border-radius: 22px 22px 0 0; padding: 20px; border-top: 1px solid #334155; }
+    input { width: 100%; padding: 13px; border-radius: 12px; border: 1px solid #334155; background: #0b0f19; color: #fff; font-size: 15px; margin: 12px 0; }
+    .buy-btn { width: 100%; padding: 14px; border: none; border-radius: 14px; background: linear-gradient(90deg, #2563eb, #06b6d4); color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; }
+    .cancel { width: 100%; padding: 10px; margin-top: 8px; background: none; border: none; color: #94a3b8; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="logo">⚡ TEZ SHOP</div>
+    <div id="uname" style="font-size:13px; color:#94a3b8;">Do'kon</div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="showCat('stars', this)">⭐ Stars</button>
+    <button class="tab" onclick="showCat('prem', this)">💎 Premium</button>
+    <button class="tab" onclick="showCat('gift', this)">🎁 Gift</button>
+    <button class="tab" onclick="showCat('uc', this)">🎮 UC</button>
+  </div>
+  <div id="list" class="grid"></div>
+  <div id="modal" class="modal">
+    <div class="sheet">
+      <div id="mTitle" style="font-size:18px; font-weight:800;">Mahsulot</div>
+      <div id="mPrice" style="font-size:15px; color:#34d399; margin-top:4px; font-weight:700;"></div>
+      <input id="targetInput" type="text" placeholder="PUBG ID yoki @username kiriting" />
+      <button class="buy-btn" onclick="goPay()">💳 Karta orqali to'lash</button>
+      <button class="cancel" onclick="closeModal()">Bekor qilish</button>
+    </div>
+  </div>
+  <script>
+    const BOT_USER = new URLSearchParams(window.location.search).get('bot') || "";
+    const tg = window.Telegram && window.Telegram.WebApp;
+    let tgUser = "";
+    if (tg) {
+      tg.ready(); tg.expand();
+      const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
+      if (u) {
+        tgUser = u.username ? u.username : "";
+        document.getElementById('uname').innerText = '@' + (u.username || u.first_name);
+      }
+    }
+    const DATA = {
+      stars: [
+        { code: "s50", icon: "⭐", title: "50 Stars", price: "12 000 so'm" },
+        { code: "s100", icon: "⭐", title: "100 Stars", price: "23 000 so'm" },
+        { code: "s500", icon: "🌟", title: "500 Stars", price: "112 000 so'm" },
+        { code: "s1000", icon: "🌟", title: "1000 Stars", price: "220 000 so'm" }
+      ],
+      prem: [
+        { code: "p1m", icon: "💎", title: "Premium 1 oy", price: "45 000 so'm" },
+        { code: "p3m", icon: "💎", title: "Premium 3 oy", price: "165 000 so'm" },
+        { code: "p6m", icon: "👑", title: "Premium 6 oy", price: "240 000 so'm" },
+        { code: "p12m", icon: "👑", title: "Premium 1 yil", price: "430 000 so'm" }
+      ],
+      gift: [
+        { code: "g15", icon: "🎁", title: "Gift 15 Stars", price: "5 000 so'm" },
+        { code: "g25", icon: "🎁", title: "Gift 25 Stars", price: "8 000 so'm" },
+        { code: "g50", icon: "🎀", title: "Gift 50 Stars", price: "14 000 so'm" },
+        { code: "g100", icon: "🎀", title: "Gift 100 Stars", price: "25 000 so'm" }
+      ],
+      uc: [
+        { code: "uc60", icon: "🎮", title: "60 UC", price: "14 000 so'm" },
+        { code: "uc325", icon: "🎮", title: "325 UC", price: "68 000 so'm" },
+        { code: "uc660", icon: "🔥", title: "660 UC", price: "135 000 so'm" },
+        { code: "uc1800", icon: "🔥", title: "1800 UC", price: "340 000 so'm" }
+      ]
+    };
+    let currentCat = "stars", selected = null;
+    function showCat(cat, btn) {
+      currentCat = cat;
+      if (btn) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      document.getElementById('list').innerHTML = DATA[cat].map(item => `
+        <div class="card" onclick='openModal(${JSON.stringify(item)})'>
+          <div class="icon">${item.icon}</div>
+          <div class="title">${item.title}</div>
+          <div class="price">${item.price}</div>
+        </div>
+      `).join('');
+    }
+    function openModal(item) {
+      selected = item;
+      document.getElementById('mTitle').innerText = item.icon + " " + item.title;
+      document.getElementById('mPrice').innerText = item.price;
+      const inp = document.getElementById('targetInput');
+      if (currentCat === "uc") {
+        inp.value = ""; inp.placeholder = "PUBG Mobile ID kiriting (masalan: 5123456789)";
+      } else {
+        inp.value = tgUser; inp.placeholder = "Telegram username (@siz)";
+      }
+      document.getElementById('modal').classList.add('open');
+    }
+    function closeModal() { document.getElementById('modal').classList.remove('open'); }
+    function goPay() {
+      let val = document.getElementById('targetInput').value.trim().replace(/[^a-zA-Z0-9_]/g, '').slice(0, 32);
+      if (!val) { alert("Iltimos, ID yoki username kiriting!"); return; }
+      if (!BOT_USER) { alert("Do'konni bot ichidan oching!"); return; }
+      const link = `https://t.me/${BOT_USER}?start=buy_${selected.code}_${val}`;
+      if (tg) { tg.openTelegramLink(link); tg.close(); } else { window.location.href = link; }
+    }
+    showCat('stars');
+  </script>
+</body>
+  </html>
