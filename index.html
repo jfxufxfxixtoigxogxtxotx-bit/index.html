@@ -109,7 +109,7 @@
       if (currentCat === "uc") {
         inp.value = ""; inp.placeholder = "PUBG Mobile ID kiriting (masalan: 5123456789)";
       } else {
-        inp.value = tgUser; inp.placeholder = "Telegram username (@siz)";
+        inp.value = tgUser; inp.placeholder = "Telegram username (@tezpaypin_bot)";
       }
       document.getElementById('modal').classList.add('open');
     }
@@ -117,8 +117,8 @@
     function goPay() {
       let val = document.getElementById('targetInput').value.trim().replace(/[^a-zA-Z0-9_]/g, '').slice(0, 32);
       if (!val) { alert("Iltimos, ID yoki username kiriting!"); return; }
-      if (!BOT_USER) { alert("Do'konni bot ichidan oching!"); return; }
-      const link = `https://t.me/${BOT_USER}?start=buy_${selected.code}_${val}`;
+      if (@tezpaypin_bot) { alert("Do'konni bot ichidan oching!"); return; }
+      const link = `https://t.me/${@tezpaypin_bot }?start=buy_${selected.code}_${val}`;
       if (tg) { tg.openTelegramLink(link); tg.close(); } else { window.location.href = link; }
     }
     showCat('stars');
